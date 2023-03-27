@@ -59,16 +59,15 @@ function setup() {
   /////////////////////////////////////////////
 
   let cnv = createCanvas(windowWidth, windowHeight);
-  cnv.mouseClicked(togglePlay);
-  fft = new p5.FFT();
-  sound.amp(0.2);
-
-  colorMode(HSB, 360, 100, 100, 1);
   setupMqtt();
   setupOsc();
   /////////////////////////////////////////////
   // FIXED SECION - END
   /////////////////////////////////////////////
+  cnv.mouseClicked(togglePlay);
+  fft = new p5.FFT();
+  sound.amp(0.2);
+
   xPos = windowWidth / 2;
   yPos = windowHeight / 2;
   colourRed = 0;
