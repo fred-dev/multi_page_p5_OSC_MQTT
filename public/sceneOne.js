@@ -4,22 +4,8 @@
   Author: Luke Hespanhol
   Date: March 2022
 ***********************************************************************/
-/*
-	Disabling canvas scroll for better experience on mobile interfce.
-	Source: 
-		User 'soanvig', answer posted on Jul 20 '17 at 18:23.
-		https://stackoverflow.com/questions/16348031/disable-scrolling-when-touch-moving-certain-element 
-*/
 
 const MQTT_LISTEN_TOPIC = "mqttHQ-client-ideaLabtest";
-
-document.addEventListener("touchstart", function (e) {
-  document.documentElement.style.overflow = "hidden";
-});
-
-document.addEventListener("touchend", function (e) {
-  document.documentElement.style.overflow = "auto";
-});
 
 //////////////////////////////////////////////////
 //FIXED SECTION: DO NOT CHANGE THESE VARIABLES
