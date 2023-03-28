@@ -4,22 +4,9 @@
   Author: Luke Hespanhol
   Date: March 2022
 ***********************************************************************/
-/*
-	Disabling canvas scroll for better experience on mobile interfce.
-	Source: 
-		User 'soanvig', answer posted on Jul 20 '17 at 18:23.
-		https://stackoverflow.com/questions/16348031/disable-scrolling-when-touch-moving-certain-element 
-*/
+
 
 const MQTT_LISTEN_TOPIC = "mqttHQ-client-ideaLabtest";
-
-document.addEventListener("touchstart", function (e) {
-  document.documentElement.style.overflow = "hidden";
-});
-
-document.addEventListener("touchend", function (e) {
-  document.documentElement.style.overflow = "auto";
-});
 
 //////////////////////////////////////////////////
 //FIXED SECTION: DO NOT CHANGE THESE VARIABLES
@@ -27,6 +14,37 @@ document.addEventListener("touchend", function (e) {
 var WEB_SERVER_PORT = 3000;
 var HOST = window.location.origin;
 var socket;
+
+let analyserNode;
+
+async function getMedia(constraints) {
+  try {
+    let stream = null;
+    stream = await navigator.mediaDevices.getUserMedia(constraints);
+    /* use the stream */
+    const audioContext = new AudioContext();
+    const microphone = audioContext.createMediaStreamSource(
+      stream
+    );
+    analyserNode = audioContext.createAnalyser();
+    microphone.connect(analyserNode);
+  } catch (err) {
+    /* handle the error */
+  }
+}
+
+function getLevel() {
+  if (!analyserNode) {
+    return 0;
+  }
+  const pcmData = new Float32Array(analyserNode.fftSize);
+  analyserNode.getFloatTimeDomainData(pcmData);
+  let sumSquares = 0.0;
+  for (const amplitude of pcmData) {
+    sumSquares += amplitude * amplitude;
+  }
+  return Math.sqrt(sumSquares / pcmData.length);
+}
 
 ////////////////////////////////////////////////////
 // CUSTOMIZABLE SECTION - BEGIN: ENTER OUR CODE HERE
@@ -51,6 +69,10 @@ function setup() {
   // FIXED SECION - START: DO NOT CHANGE IT
   /////////////////////////////////////////////
   createCanvas(windowWidth, windowHeight);
+  getMedia({
+    audio: true,
+    video: false,
+  });
   setupMqtt();
   setupOsc();
   /////////////////////////////////////////////
@@ -77,19 +99,13 @@ function setup() {
   btnSceneFour.position(800, 0);
   btnSceneFour.mousePressed(goToSceneFour);
 
-    // Create an Audio input
-    mic = new p5.AudioIn();
-
-    // start the Audio Input.
-    // By default, it does not .connect() (to the computer speakers)
-    mic.start();
 }
 
 function draw() {
   background(mqttReceiveRed, mqttReceiveGreen, mqttReceiveBlue);
 
-  vol = mic.getLevel();
-  console.log(vol)
+  vol = getLevel();
+  //console.log(vol)
     
   fill(oscReceiveRed, oscReceiveGreen, oscReceiveBlue);
   stroke(0);
@@ -119,7 +135,14 @@ function mousePressed(){
   getAudioContext().resume();
 }
 
-
+function gotSources(deviceList) {
+  if (deviceList.length > 0) {
+    //set the source to the first item in the deviceList array
+    audioIn.setSource(0);
+    let currentSource = deviceList[audioIn.currentSource];
+    text('set source to: ' + currentSource.deviceId, 5, 20, width);
+  }
+}
 ////////////////////////////////////////////////////
 // CUSTOMIZABLE SECTION - END: ENTER OUR CODE HERE
 ////////////////////////////////////////////////////
